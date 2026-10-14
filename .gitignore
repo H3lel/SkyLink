@@ -1,0 +1,9 @@
+target/
+build/
+winhelper/bin/
+winhelper/obj/
+*.AppImage
+# never commit vendor binaries or the extracted key
+rootGo.dll
+apikey
+*.exe

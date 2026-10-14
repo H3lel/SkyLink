@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=nthLink
+GenericName=Censorship circumvention VPN
+Comment=Free, secure access to the open internet
+Exec=nthlink
+Icon=nthlink
+Terminal=false
+Categories=Network;
+Keywords=vpn;proxy;censorship;
+StartupWMClass=com.nthlink.linux
+X-AppImage-Version=7.1.0

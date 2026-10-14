@@ -1,0 +1,5 @@
+#!/bin/sh
+# AppImage entry point. Everything is resolved relative to the mount point.
+HERE="$(dirname "$(readlink -f "$0")")"
+export NTHLINK_RESOURCES="$HERE/usr/lib/nthlink"
+exec "$HERE/usr/bin/nthlink" "$@"

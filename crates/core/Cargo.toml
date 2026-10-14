@@ -1,0 +1,20 @@
+[package]
+name = "nthlink-core"
+version.workspace = true
+edition.workspace = true
+description = "Privileged tunnel half of the nthLink Linux client (leaf + TUN + routing)"
+
+[[bin]]
+name = "nthlink-core"
+path = "src/main.rs"
+
+[dependencies]
+nthlink-common = { path = "../common" }
+libc = "0.2"
+serde_json = "1"
+tokio = { version = "1", features = ["rt"] }
+
+[dependencies.leaf]
+path = "../../third_party/leaf/leaf"
+default-features = false
+features = ["default-aws-lc"]

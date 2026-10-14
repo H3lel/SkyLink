@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tiny console bridge that runs under Wine and calls the vendor's rootGo.dll
+       (the nthLink directory-service client). Built self-contained for win-x64. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <DebuggerSupport>false</DebuggerSupport>
+    <Nullable>enable</Nullable>
+    <AssemblyName>rootgo-bridge</AssemblyName>
+  </PropertyGroup>
+</Project>
