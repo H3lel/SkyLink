@@ -66,6 +66,9 @@ fn main() {
             libc::signal(s, on_signal as extern "C" fn(libc::c_int) as libc::sighandler_t);
         }
     }
+    // leaf holds sockets per connection; the inherited soft limit (1024) is
+    // far too low for a whole-system tunnel.
+    nthlink_common::rlimit::raise_nofile();
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut config = None;

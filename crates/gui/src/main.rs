@@ -13,6 +13,8 @@ mod engine;
 mod ui;
 
 fn main() {
+    // Inherited by nthlink-core (proxy mode runs it without elevation).
+    nthlink_common::rlimit::raise_nofile();
     let cmd = std::env::args().nth(1);
     let code = match cmd.as_deref() {
         Some("connect") => cli::connect(),
