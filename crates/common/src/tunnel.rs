@@ -9,6 +9,9 @@ pub const TUN_ADDR: &str = "172.19.0.1";
 pub const TUN_PEER: &str = "172.19.0.2";
 pub const TUN_NETMASK: &str = "255.255.255.252";
 pub const TUN_MTU: u32 = 1500;
+/// The TUN's own /30. Must never be routed `Direct`: leaf's direct socket
+/// would send it straight back into the TUN.
+pub const TUN_CIDR: &str = "172.19.0.0/30";
 /// Address handed to the system resolver; any UDP/53 that reaches the TUN is
 /// answered by leaf's fake DNS.
 pub const TUN_DNS: &str = TUN_PEER;

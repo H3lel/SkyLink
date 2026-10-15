@@ -14,6 +14,17 @@ use rand::Rng;
 /// core owns that decision.
 const CAPTURE_KEYS: &[&str] = &["tun", "tun-fd", "tun2socks-backend", "nf"];
 
+/// Outbound that swallows traffic addressed to the TUN itself.
+const TUN_GUARD: &str = "TunGuard";
+
+/// DNS queries fake DNS can't answer (PTR, SOA, ... from systemd-resolved)
+/// fall through to the rules. The usual `IP-CIDR, 172.16.0.0/12, Direct`
+/// covers the TUN's DNS address, so leaf would send them straight back into
+/// the TUN, endlessly, opening a socket each time. Reject them instead.
+fn tun_guard_rule() -> String {
+    format!("IP-CIDR, {}, {TUN_GUARD}", tunnel::TUN_CIDR)
+}
+
 #[derive(Debug, Clone)]
 pub struct LeafOptions {
     /// leaf log level (`trace`, `debug`, `info`, `warn`, `error`).
@@ -122,6 +133,8 @@ pub fn modify_custom_config(text: &str, opts: &LeafOptions) -> String {
     if let Some(f) = &opts.log_file {
         general.push(format!("logoutput = {f}"));
     }
+    section_mut(&mut sections, "[Proxy]").push(format!("{TUN_GUARD} = reject"));
+    section_mut(&mut sections, "[Rule]").insert(0, tun_guard_rule());
 
     let mut out = String::new();
     for (name, lines) in &sections {
@@ -134,6 +147,17 @@ pub fn modify_custom_config(text: &str, opts: &LeafOptions) -> String {
         out.push('\n');
     }
     out
+}
+
+fn section_mut<'a>(sections: &'a mut Vec<(String, Vec<String>)>, name: &str) -> &'a mut Vec<String> {
+    let i = match sections.iter().position(|(n, _)| n.eq_ignore_ascii_case(name)) {
+        Some(i) => i,
+        None => {
+            sections.push((name.to_string(), Vec::new()));
+            sections.len() - 1
+        }
+    };
+    &mut sections[i].1
 }
 
 /// `GenerateClientConfigAsync`, with LAN traffic kept direct and a proper
@@ -170,12 +194,14 @@ pub fn generate_client_config(servers: &[&Server], opts: &LeafOptions) -> String
         s.push_str(&hosts);
         s.push('\n');
     }
-    s.push_str("[Proxy]\nDirect = direct\n");
+    s.push_str(&format!("[Proxy]\nDirect = direct\n{TUN_GUARD} = reject\n"));
     s.push_str(&proxies);
     s.push('\n');
     s.push_str("[Proxy Group]\n");
     s.push_str(&format!("Random = random, {}\n\n", names.join(", ")));
     s.push_str("[Rule]\n");
+    s.push_str(&tun_guard_rule());
+    s.push('\n');
     for cidr in ["127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "224.0.0.0/4", "255.255.255.255/32"] {
         s.push_str(&format!("IP-CIDR, {cidr}, Direct\n"));
     }
@@ -306,7 +332,19 @@ mod tests {
         assert!(out.contains("always-fake-ip = *"));
         assert!(out.contains("loglevel = warn"));
         assert!(!out.contains("loglevel = error"));
-        assert!(out.contains("[Rule]\nFINAL, Direct"));
+        assert!(out.contains("[Rule]\nIP-CIDR, 172.19.0.0/30, TunGuard\nFINAL, Direct"));
+        assert!(out.contains("TunGuard = reject"));
+    }
+
+    #[test]
+    fn tun_subnet_is_never_direct() {
+        let src = "[Proxy]\nDirect = direct\na = trojan, x, 443\n[Rule]\nIP-CIDR, 172.16.0.0/12, Direct\nFINAL, a\n";
+        let out = modify_custom_config(src, &LeafOptions::default());
+        let rules: Vec<&str> = out.split("[Rule]\n").nth(1).unwrap().lines().collect();
+        assert_eq!(rules[0], "IP-CIDR, 172.19.0.0/30, TunGuard");
+        assert_eq!(final_outbound(&out).as_deref(), Some("a"));
+        let gen = generate_client_config(&[], &LeafOptions::default());
+        assert!(gen.contains("[Rule]\nIP-CIDR, 172.19.0.0/30, TunGuard\n"));
     }
 
     #[test]
