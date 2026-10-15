@@ -1963,7 +1963,7 @@ dependencies = [
 
 [[package]]
 name = "nthlink"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "async-channel",
  "gtk4",
@@ -1974,7 +1974,7 @@ dependencies = [
 
 [[package]]
 name = "nthlink-common"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "libc",
  "rand 0.8.8",
@@ -1984,7 +1984,7 @@ dependencies = [
 
 [[package]]
 name = "nthlink-core"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "leaf",
  "libc",

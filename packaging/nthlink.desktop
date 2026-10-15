@@ -9,4 +9,4 @@ Terminal=false
 Categories=Network;
 Keywords=vpn;proxy;censorship;
 StartupWMClass=com.nthlink.linux
-X-AppImage-Version=7.1.0
+X-AppImage-Version=7.1.1
